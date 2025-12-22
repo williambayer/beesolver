@@ -1,9 +1,12 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { HoneycombInput } from '@/components/HoneycombInput';
 import { ResultsDisplay } from '@/components/ResultsDisplay';
 import { useSpellingBeeSolver } from '@/hooks/useSpellingBeeSolver';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const Index = () => {
+  const [isFetching, setIsFetching] = useState(false);
   const {
     letters,
     setLetter,
@@ -29,6 +32,32 @@ const Index = () => {
     }
     setAllLetters([center, ...outer, ...Array(6 - outer.length).fill('')]);
   }, [letters, setAllLetters]);
+
+  const handleFetchToday = useCallback(async () => {
+    setIsFetching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-spelling-bee');
+      
+      if (error) throw error;
+      
+      if (data?.success) {
+        const allLetters = [data.centerLetter, ...data.outerLetters];
+        setAllLetters(allLetters);
+        toast.success(`Loaded puzzle for ${data.date}`);
+      } else {
+        toast.error(data?.error || 'Could not fetch puzzle', {
+          description: data?.hint || 'Try entering letters manually'
+        });
+      }
+    } catch (err) {
+      console.error('Fetch error:', err);
+      toast.error('Failed to fetch today\'s puzzle', {
+        description: 'NYT may require login. Enter letters manually.'
+      });
+    } finally {
+      setIsFetching(false);
+    }
+  }, [setAllLetters]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -56,12 +85,21 @@ const Index = () => {
               onShuffle={handleShuffle}
             />
 
-            <button
-              onClick={resetLetters}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Clear all
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={handleFetchToday}
+                disabled={isFetching}
+                className="px-4 py-2 text-sm font-medium rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+              >
+                {isFetching ? 'Fetching...' : "Today's Puzzle"}
+              </button>
+              <button
+                onClick={resetLetters}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Clear all
+              </button>
+            </div>
           </div>
 
           {/* Results Section */}
