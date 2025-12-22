@@ -61,38 +61,43 @@ export function useSpellingBeeSolver() {
 
   const results = useMemo((): SolverResult[] => {
     const validLetters = letters.filter(l => l !== '');
-    if (validLetters.length !== 7 || !centerLetter) {
+    // Use letters[0] directly as the center letter for consistency
+    const center = letters[0]?.toLowerCase();
+    
+    if (validLetters.length !== 7 || !center) {
       return [];
     }
 
     const letterSet = new Set(validLetters.map(l => l.toLowerCase()));
-    const center = centerLetter.toLowerCase();
 
     return WORD_LIST.filter(word => {
-      // Must be at least 4 letters
-      if (word.length < 4) return false;
+      const lowerWord = word.toLowerCase();
       
-      // Must contain center letter
-      if (!word.includes(center)) return false;
+      // Must be at least 4 letters
+      if (lowerWord.length < 4) return false;
+      
+      // Must contain center letter (the first/center letter)
+      if (!lowerWord.includes(center)) return false;
       
       // Must only use available letters
-      for (const char of word) {
+      for (const char of lowerWord) {
         if (!letterSet.has(char)) return false;
       }
       
       return true;
     }).map(word => {
-      const uniqueLetters = new Set(word);
+      const lowerWord = word.toLowerCase();
+      const uniqueLetters = new Set(lowerWord);
       const isPangram = uniqueLetters.size === 7 && 
         [...letterSet].every(l => uniqueLetters.has(l));
       
       // Scoring: 1 point for 4-letter words, length points for longer, +7 for pangram
-      let points = word.length === 4 ? 1 : word.length;
+      let points = lowerWord.length === 4 ? 1 : lowerWord.length;
       if (isPangram) points += 7;
       
       return {
-        word,
-        length: word.length,
+        word: lowerWord,
+        length: lowerWord.length,
         isPangram,
         points,
       };
@@ -101,7 +106,7 @@ export function useSpellingBeeSolver() {
       if (a.length !== b.length) return a.length - b.length;
       return a.word.localeCompare(b.word);
     });
-  }, [letters, centerLetter]);
+  }, [letters]);
 
   const groupedResults = useMemo((): GroupedResults => {
     const grouped: GroupedResults = {};
