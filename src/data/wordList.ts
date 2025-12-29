@@ -677,5 +677,29 @@ export const WORD_LIST: string[] = [
   "version", "veteran", "village", "vintage", "virtual", "visible", "vitamin", "waiting",
   "walking", "warning", "wealthy", "weather", "website", "weekend", "welcome", "welfare",
   "western", "whether", "whoever", "willing", "winning", "without", "witness", "working",
-  "worried", "worship", "wrapper", "writing", "written", "younger", "yourself", "zooming"
+  "worried", "worship", "wrapper", "writing", "written", "younger", "yourself", "zooming",
+
+  // Additional Spelling Bee words
+  // 4-letter words
+  "baba", "blab", "blin",
+  
+  // 5-letter words
+  "labia", "bindi", "bling",
+  
+  // 6-letter words
+  "baaing", "ballad", "banana", "gibing", "labial",
+  
+  // 7-letter words
+  "abiding", "badging", "bagging", "bailing", "balding", "baling", "balling", 
+  "bandana", "banding", "banging", "banning", "bidding", "biding", "billing", 
+  "binding", "binging", "binning", "blading", "dabbing", "gabbing", "nabbing",
+  
+  // 8-letter words
+  "babbling", "bandanna", "bilabial", "blabbing", "blinding", "dabbling", "gabbling", "nibbling",
+  
+  // 9-letter words
+  "bandaging",
+  
+  // 10-letter words
+  "libidinal"
 ];
