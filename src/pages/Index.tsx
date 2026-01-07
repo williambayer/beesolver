@@ -1,12 +1,16 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { HoneycombInput } from '@/components/HoneycombInput';
 import { ResultsDisplay } from '@/components/ResultsDisplay';
 import { useSpellingBeeSolver } from '@/hooks/useSpellingBeeSolver';
+import { useWordList } from '@/hooks/useWordList';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { RefreshCw } from 'lucide-react';
 
 const Index = () => {
   const [isFetching, setIsFetching] = useState(false);
+  const { wordList, isUpdating, updateWordList, wordCount, isCacheStale } = useWordList();
+  
   const {
     letters,
     setLetter,
@@ -21,7 +25,31 @@ const Index = () => {
     revealAll,
     resetHints,
     isComplete,
-  } = useSpellingBeeSolver();
+  } = useSpellingBeeSolver(wordList);
+
+  // Auto-update word list if cache is stale (on first load)
+  useEffect(() => {
+    if (isCacheStale()) {
+      updateWordList().then(result => {
+        if (result.success) {
+          console.log(`Word list updated: ${result.wordCount} words`);
+        }
+      });
+    }
+  }, []);
+
+  const handleUpdateDictionary = useCallback(async () => {
+    const result = await updateWordList();
+    if (result.success) {
+      toast.success(`Dictionary updated!`, {
+        description: `Now using ${result.wordCount?.toLocaleString()} words`
+      });
+    } else {
+      toast.error('Failed to update dictionary', {
+        description: result.error
+      });
+    }
+  }, [updateWordList]);
 
   const handleShuffle = useCallback(() => {
     const center = letters[0];
@@ -85,7 +113,7 @@ const Index = () => {
               onShuffle={handleShuffle}
             />
 
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3 justify-center">
               <button
                 onClick={handleFetchToday}
                 disabled={isFetching}
@@ -94,12 +122,24 @@ const Index = () => {
                 {isFetching ? 'Fetching...' : "Today's Puzzle"}
               </button>
               <button
+                onClick={handleUpdateDictionary}
+                disabled={isUpdating}
+                className="px-4 py-2 text-sm font-medium rounded-full border border-border hover:bg-accent transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${isUpdating ? 'animate-spin' : ''}`} />
+                {isUpdating ? 'Updating...' : 'Update Dict'}
+              </button>
+              <button
                 onClick={resetLetters}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Clear all
               </button>
             </div>
+            
+            <p className="text-xs text-muted-foreground text-center">
+              Dictionary: {wordCount.toLocaleString()} words
+            </p>
           </div>
 
           {/* Results Section */}

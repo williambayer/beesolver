@@ -1,5 +1,4 @@
 import { useState, useMemo, useCallback } from 'react';
-import { WORD_LIST } from '@/data/wordList';
 
 export interface SolverResult {
   word: string;
@@ -19,7 +18,7 @@ export interface HintState {
   showAllWords: boolean;
 }
 
-export function useSpellingBeeSolver() {
+export function useSpellingBeeSolver(wordList: string[]) {
   const [letters, setLetters] = useState<string[]>(['', '', '', '', '', '', '']);
   const [centerLetter, setCenterLetter] = useState<string>('');
   const [hintState, setHintState] = useState<HintState>({
@@ -70,7 +69,7 @@ export function useSpellingBeeSolver() {
 
     const letterSet = new Set(validLetters.map(l => l.toLowerCase()));
 
-    return WORD_LIST.filter(word => {
+    return wordList.filter(word => {
       const lowerWord = word.toLowerCase();
       
       // Must be at least 4 letters
@@ -106,7 +105,7 @@ export function useSpellingBeeSolver() {
       if (a.length !== b.length) return a.length - b.length;
       return a.word.localeCompare(b.word);
     });
-  }, [letters]);
+  }, [letters, wordList]);
 
   const groupedResults = useMemo((): GroupedResults => {
     const grouped: GroupedResults = {};
