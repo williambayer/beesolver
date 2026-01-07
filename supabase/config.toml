@@ -1,1 +1,7 @@
 project_id = "kzrnrfpqdjvqkplpehtk"
+
+[functions.fetch-spelling-bee]
+verify_jwt = false
+
+[functions.fetch-word-list]
+verify_jwt = false
